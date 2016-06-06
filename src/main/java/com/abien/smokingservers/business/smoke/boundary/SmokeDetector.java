@@ -1,5 +1,8 @@
 package com.abien.smokingservers.business.smoke.boundary;
 
+import com.abien.smokingservers.business.detection.control.SmokeSensor;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
@@ -9,10 +12,20 @@ import javax.interceptor.InvocationContext;
  */
 public class SmokeDetector {
 
+    @Inject
+    SmokeSensor sensor;
+
+    @Inject
+    Event<Exception> events;
 
     @AroundInvoke
-    public Object detectSmoke(InvocationContext ic) throws Exception{
-        System.out.println("Method: " + ic.getMethod());
-        return ic.proceed();
+    public Object detectSmoke(InvocationContext ic) throws Exception {
+        sensor.reportCall("Method: " + ic.getMethod());
+        try {
+            return ic.proceed();
+        } catch (Exception e) {
+            events.fire(e);
+            throw e;
+        }
     }
 }
