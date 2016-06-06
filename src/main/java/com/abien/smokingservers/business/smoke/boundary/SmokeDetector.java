@@ -20,12 +20,15 @@ public class SmokeDetector {
 
     @AroundInvoke
     public Object detectSmoke(InvocationContext ic) throws Exception {
-        sensor.reportCall("Method: " + ic.getMethod());
+        long start = System.currentTimeMillis();
         try {
             return ic.proceed();
         } catch (Exception e) {
             events.fire(e);
             throw e;
+        } finally {
+            long duration = System.currentTimeMillis() - start;
+            sensor.reportCall("Method: " + ic.getMethod() + " took: " + duration + " ms");
         }
     }
 }
